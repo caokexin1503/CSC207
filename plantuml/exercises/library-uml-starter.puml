@@ -27,19 +27,122 @@ abstract class Item {
   + getCatalogueNumber() : String
 }
 
-' TODO: add boxes for Book and DVD. What differs between them — a whole class,
-'       or just the value of a loan-period field?
+' ---------------------------------------------------------------------------
+' My design (Chapter 8, Question 1). Design decisions:
+'  * Only some items can be borrowed, so "borrowing" is a capability expressed
+'    by the Borrowable interface. ReferenceItem does not implement it, so you
+'    cannot even ask to borrow one: the compiler rules it out.
+'  * Books and DVDs differ only in loan period. I keep them as subclasses of
+'    BorrowableItem (so the catalogue can still tell them apart), but the loan
+'    period itself is a field set by each constructor, not overridden behaviour.
+'  * Member and Librarian are both people the library knows about and who log
+'    in, so they share an abstract LibraryUser supertype. The spec only says
+'    members log in with a member number, so the shared "id" is an assumption.
+'  * A Hold is remembered by the item it is on: when the item is returned,
+'    that item is the object that needs to know who is waiting for it.
+' ---------------------------------------------------------------------------
 
-' TODO: reference-only items cannot be borrowed at all. Decide how to say that
-'       in the diagram: a subclass, or an interface (e.g. "Borrowable") that
-'       only some items realize?
+interface Borrowable {
+  + getLoanPeriodDays() : int
+  + isOnLoan() : boolean
+  + checkOut(member : Member) : Loan
+  + checkIn() : void
+  + placeHold(member : Member) : Hold
+}
 
-' TODO: add Member and Librarian. What do they have in common? Add the common
-'       supertype if you think one is warranted.
+abstract class BorrowableItem {
+  - loanPeriodDays : int
+  - currentLoan : Loan
+  - holds : List<Hold>
+  + getLoanPeriodDays() : int
+  + isOnLoan() : boolean
+  + checkOut(member : Member) : Loan
+  + checkIn() : void
+  + placeHold(member : Member) : Hold
+  + getHolds() : List<Hold>
+}
 
-' TODO: add whatever represents a hold, and connect it to the classes that need
-'       to know about it.
+class Book {
+  + {static} LOAN_PERIOD_DAYS : int = 21
+  + Book(title : String, catalogueNumber : String)
+}
 
-' TODO: add the arrows between all of your types.
+class DVD {
+  + {static} LOAN_PERIOD_DAYS : int = 7
+  + DVD(title : String, catalogueNumber : String)
+}
+
+class ReferenceItem {
+  + ReferenceItem(title : String, catalogueNumber : String)
+}
+
+class Loan {
+  - item : BorrowableItem
+  - member : Member
+  - dueDate : LocalDate
+  + getDueDate() : LocalDate
+  + isOverdue(today : LocalDate) : boolean
+}
+
+class Hold {
+  - item : BorrowableItem
+  - member : Member
+  - placedOn : LocalDate
+  + getMember() : Member
+}
+
+abstract class LibraryUser {
+  - id : String
+  - name : String
+  + getId() : String
+  + getName() : String
+}
+
+class Member {
+  - lateFee : double
+  - loans : List<Loan>
+  + getLateFee() : double
+  + setLateFee(amount : double) : void
+  + placeHold(item : Borrowable) : Hold
+}
+
+class Librarian {
+  + addItem(catalogue : Catalogue, item : Item) : void
+  + waiveLateFee(member : Member) : void
+}
+
+class Catalogue {
+  - items : Map<String, Item>
+  + addItem(item : Item) : void
+  + findItem(catalogueNumber : String) : Item
+}
+
+class Library {
+  - catalogue : Catalogue
+  - members : Map<String, Member>
+  + login(memberNumber : String) : Member
+  + getCatalogue() : Catalogue
+}
+
+' Inheritance
+Item <|-- BorrowableItem
+Item <|-- ReferenceItem
+BorrowableItem <|-- Book
+BorrowableItem <|-- DVD
+Borrowable <|.. BorrowableItem
+LibraryUser <|-- Member
+LibraryUser <|-- Librarian
+
+' Associations
+Library "1" *-- "1" Catalogue
+Library "1" o-- "*" Member
+Catalogue "1" o-- "*" Item
+BorrowableItem "1" --> "0..1" Loan : currentLoan
+BorrowableItem "1" --> "*" Hold : holds
+Loan "*" --> "1" Member
+Hold "*" --> "1" Member
+Member "1" --> "*" Loan : loans
+Librarian ..> Catalogue : adds items to
+Librarian ..> Member : waives fee of
 
 @enduml

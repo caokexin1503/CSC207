@@ -1,4 +1,5 @@
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -32,13 +33,25 @@ public class RegistrationForm {
    * @return the form's root panel
    */
   public static JPanel buildForm() {
-    JPanel panel = new JPanel(new FlowLayout());
-    panel.add(new JLabel("First name:"));
-    panel.add(new JTextField(12));
-    panel.add(new JLabel("Last name:"));
-    panel.add(new JTextField(12));
-    panel.add(new JButton("Submit"));
-    panel.add(new JButton("Cancel"));
+    // Each row is its own panel: a label followed by its text field.
+    JPanel firstNameRow = new JPanel(new FlowLayout());
+    firstNameRow.add(new JLabel("First name:"));
+    firstNameRow.add(new JTextField(12));
+
+    JPanel lastNameRow = new JPanel(new FlowLayout());
+    lastNameRow.add(new JLabel("Last name:"));
+    lastNameRow.add(new JTextField(12));
+
+    // The buttons centred in a row underneath.
+    JPanel buttonRow = new JPanel(new FlowLayout(FlowLayout.CENTER));
+    buttonRow.add(new JButton("Submit"));
+    buttonRow.add(new JButton("Cancel"));
+
+    // Stack the three rows vertically.
+    JPanel panel = new JPanel(new GridLayout(3, 1));
+    panel.add(firstNameRow);
+    panel.add(lastNameRow);
+    panel.add(buttonRow);
     return panel;
   }
 

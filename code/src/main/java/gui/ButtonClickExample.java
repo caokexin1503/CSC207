@@ -35,7 +35,8 @@ public class ButtonClickExample {
           JPanel buttonPanel = new JPanel();
           JButton submit = new JButton("Submit");
           buttonPanel.add(submit);
-          buttonPanel.add(new JButton("Cancel"));
+          JButton cancel = new JButton("Cancel");
+          buttonPanel.add(cancel);
 
           submit.addActionListener(
               new ActionListener() {
@@ -44,6 +45,16 @@ public class ButtonClickExample {
                   String firstName = firstNameField.getText();
                   String lastName = lastNameField.getText();
                   JOptionPane.showMessageDialog(null, "Hello " + firstName + " " + lastName);
+                }
+              });
+
+          // Exercise 4.3.1: clicking Cancel clears both text fields.
+          cancel.addActionListener(
+              new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                  firstNameField.setText("");
+                  lastNameField.setText("");
                 }
               });
 
